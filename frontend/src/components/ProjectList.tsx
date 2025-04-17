@@ -1,24 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Project } from '../types/Project';
 import { useNavigate } from 'react-router-dom';
+import { fetchProjects } from '../api/ProjectsAPI';
 
 function ProjectList({ selectedCategories }: { selectedCategories: string[] }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      const categoryParams = selectedCategories
-        .map((cat) => `projectTypes=${encodeURIComponent(cat)}`)
-        .join('&');
-
-      const response = await fetch(
-        `https://localhost:5000/Water/AllProjects?${selectedCategories.length ? `&${categoryParams}` : ''}`
-      );
-      const data = await response.json();
-      setProjects(data);
+    const getProjects = async () => {
+      try {
+        const data = await fetchProjects(selectedCategories);
+        setProjects(data); 
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      }
     };
-    fetchProjects();
+
+    getProjects();
   }, [selectedCategories]);
 
   return (
@@ -45,7 +44,14 @@ function ProjectList({ selectedCategories }: { selectedCategories: string[] }) {
               </li>
             </ul>
 
-            <button className='btn btn-success' onClick={() => navigate(`/donate/${p.projectName}/${p.projectId}`)}>Donate</button>
+            <button
+              className="btn btn-success"
+              onClick={() =>
+                navigate(`/donate/${p.projectName}/${p.projectId}`)
+              }
+            >
+              Donate
+            </button>
           </div>
         </div>
       ))}
